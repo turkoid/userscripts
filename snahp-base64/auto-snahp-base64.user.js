@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        Snaph.it Base64 Helper (auto)
+// @name        Snaph Base64 Helper (auto)
 // @namespace   turkoid
-// @match       https://forum.snahp.it/*
+// @match       https://snahp.url/*
 // @grant       none
 // @version     1.0
 // @author      turkoid
