@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name        Snaph Base64 Helper
+// @name        Snaph.it Base64 Helper
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     1.0
+// @version     1.1
 // @author      turkoid
 // @description Adds a button to decode base64 code blocks. Does not automatically do it.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp-base64/easy-snahp-base64.meta.js
