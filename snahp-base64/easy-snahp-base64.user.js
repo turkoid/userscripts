@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Snaph.it Base64 Helper
+// @name        Snaph Base64 Helper
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
