@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        snahp Helper
+// @name        Snahp Helper
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
