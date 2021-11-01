@@ -98,11 +98,10 @@
         if (decodedValue.length % 4 !== 0) {
           break
         }
-        console.debug(`[${decodeCount}]: ${decodedValue}`)
         decodedValue = atob(decodedValue)
         decodeCount++
         BASE64_CHARS.lastIndex = 0
-        isDecoded = !snahp.utils.isBase64(decodedValue)
+        isDecoded = snahp.utils.isUrl(decodedValue)
       } while (decodeCount < 3 && !isDecoded)
       if (isDecoded) {
         // add text node from last match endIndex to current match beginIndex
@@ -217,7 +216,7 @@
 
   snahp.dom.createDecodedElement = function (decodedValue) {
     decodedValue = snahp.utils.fixPartialUrl(decodedValue)
-    if (!decodedValue.endsWith('/') && (decodedValue.startsWith('http://') || decodedValue.startsWith('https://'))) {
+    if (snahp.utils.isUrl(decodedValue)) {
       decodedValue = snahp.utils.updateUrl(decodedValue)
       return snahp.dom.createLink(decodedValue)
     } else {
@@ -271,6 +270,10 @@
 
   snahp.utils.isBase64 = function (string) {
     return snahp.utils.isPatternFound(BASE64_CHARS, string)
+  }
+
+  snahp.utils.isUrl = function (string) {
+    return snahp.utils.isPatternFound(URL, string)
   }
 
   snahp.utils.updateUrl = function (url) {
