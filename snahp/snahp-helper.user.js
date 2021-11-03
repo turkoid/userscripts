@@ -101,13 +101,14 @@
       // decode till we see a non base64 url pattern, but only up to 3 times
       let decodeCount = 0
       do {
+        console.debug(decodedValue)
         if (decodedValue.length % 4 !== 0) {
           break
         }
         decodedValue = atob(decodedValue)
         decodeCount++
         BASE64_CHARS.lastIndex = 0
-        isDecoded = snahp.utils.isPartialUrl(decodedValue)
+        isDecoded = snahp.utils.isPartialUrl(decodedValue) || snahp.utils.isPatternFound(MEGA_URL_FRAGMENT, decodedValue)
       } while (decodeCount < 3 && !isDecoded)
       if (isDecoded) {
         // add text node from last match endIndex to current match beginIndex
