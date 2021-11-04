@@ -55,10 +55,9 @@
      */
     const hideBoxes = container.querySelectorAll(`dl.hidebox > dd:not([${SNAHP_ATTR}])`)
     hideBoxes.forEach(hideBox => {
-      if (snahp.utils.hasSingleTextNode(hideBox)) {
-        snahp.findEncodedUrls(hideBox)
-        snahp.findUrls(hideBox)
-      }
+      snahp.findEncodedUrls(hideBox)
+      snahp.findUrls(hideBox)
+      snahp.findUrlFragments(container)
     })
   }
 
@@ -68,10 +67,9 @@
      */
     const codeElements = container.querySelectorAll(`code:not([${SNAHP_ATTR}])`)
     codeElements.forEach(codeElement => {
-      if (snahp.utils.hasSingleTextNode(codeElement)) {
-        snahp.findEncodedUrls(codeElement)
-        snahp.findUrls(codeElement)
-      }
+      snahp.findEncodedUrls(codeElement)
+      snahp.findUrls(codeElement)
+      snahp.findUrlFragments(container)
     })
   }
 
@@ -79,6 +77,8 @@
     /**
      * checks the full content node by node, but only at depth 1
      */
+    snahp.findEncodedUrls(container)
+    snahp.findUrls(container)
     snahp.findUrlFragments(container)
   }
 
@@ -90,45 +90,55 @@
     if (container.hasAttribute(SNAHP_ATTR)) {
       return
     }
-    const nodeValue = container.childNodes[0].nodeValue
-    const matches = nodeValue.matchAll(BASE64_CHARS)
-    const nodes = []
-    let lastIndex = 0
-    for (const match of matches) {
-      let isDecoded = false
-      const encodedValue = match[0]
-      let decodedValue = encodedValue
-      // decode till we see a non base64 url pattern, but only up to 3 times
-      let decodeCount = 0
-      do {
-        console.debug(decodedValue)
-        if (decodedValue.length % 4 !== 0) {
-          break
+
+    const containerNodes = []
+    let isModified = false
+    for (const node of container.childNodes) {
+      if (node.nodeType === TEXT_NODE_TYPE) {
+        const nodeValue = node.nodeValue
+        const matches = nodeValue.matchAll(BASE64_CHARS)
+        const nodes = []
+        let lastIndex = 0
+        for (const match of matches) {
+          let isDecoded = false
+          const encodedValue = match[0]
+          let decodedValue = encodedValue
+          // decode till we see a non base64 url pattern, but only up to 3 times
+          let decodeCount = 0
+          do {
+            if (decodedValue.length % 4 !== 0) {
+              break
+            }
+            decodedValue = atob(decodedValue)
+            decodeCount++
+            BASE64_CHARS.lastIndex = 0
+            isDecoded = snahp.utils.isPartialUrl(decodedValue) || snahp.utils.isPatternFound(MEGA_URL_FRAGMENT, decodedValue)
+          } while (decodeCount < 3 && !isDecoded)
+          if (isDecoded) {
+            // add text node from last match endIndex to current match beginIndex
+            // then create a wrapper element to store the helper buttons.
+            snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
+            const wrapper = snahp.base64.createWrapper(encodedValue, decodedValue)
+            nodes.push(wrapper)
+            isModified = true
+          } else {
+            // just add the whole match string including anything before it
+            snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index + encodedValue.length))
+          }
+          lastIndex = match.index + match[0].length
         }
-        decodedValue = atob(decodedValue)
-        decodeCount++
-        BASE64_CHARS.lastIndex = 0
-        isDecoded = snahp.utils.isPartialUrl(decodedValue) || snahp.utils.isPatternFound(MEGA_URL_FRAGMENT, decodedValue)
-      } while (decodeCount < 3 && !isDecoded)
-      if (isDecoded) {
-        // add text node from last match endIndex to current match beginIndex
-        // then create a wrapper element to store the helper buttons.
-        snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
-        const wrapper = snahp.base64.createWrapper(encodedValue, decodedValue)
-        nodes.push(wrapper)
+        // add any remaining text
+        snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
+        containerNodes.push(...nodes)
       } else {
-        // just add the whole match string including anything before it
-        snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index + encodedValue.length))
+        containerNodes.push(node)
       }
-      lastIndex = match.index + match[0].length
     }
-    // add any remaining text
-    snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
-    if (nodes.length > 1 || nodes[0].nodeType !== TEXT_NODE_TYPE) {
+
+    if (isModified) {
       container.setAttribute(SNAHP_ATTR, 'true')
-      // only replace child nodes if something changed
-      container.childNodes[0].remove()
-      container.append(...nodes)
+      container.textContent = ''
+      container.append(...containerNodes)
     }
   }
 
@@ -140,24 +150,35 @@
     if (container.hasAttribute(SNAHP_ATTR)) {
       return
     }
-    const nodeValue = container.childNodes[0].nodeValue
-    const matches = nodeValue.matchAll(URL)
-    const nodes = []
-    let lastIndex = 0
-    for (const match of matches) {
-      snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
-      const url = snahp.utils.updateUrl(match[0])
-      const link = snahp.dom.createLink(url)
-      nodes.push(link)
-      lastIndex = match.index + match[0].length
+
+    const containerNodes = []
+    let isModified = false
+    for (const node of container.childNodes) {
+      if (node.nodeType === TEXT_NODE_TYPE) {
+        const nodeValue = node.nodeValue
+        const matches = nodeValue.matchAll(URL)
+        const nodes = []
+        let lastIndex = 0
+        for (const match of matches) {
+          snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
+          const url = snahp.utils.updateUrl(match[0])
+          const link = snahp.dom.createLink(url)
+          nodes.push(link)
+          lastIndex = match.index + match[0].length
+          isModified = true
+        }
+        // add any remaining text
+        snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
+        containerNodes.push(...nodes)
+      } else {
+        containerNodes.push(node)
+      }
     }
-    // add any remaining text
-    snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
-    if (nodes.length > 1 || nodes[0].nodeType !== TEXT_NODE_TYPE) {
+
+    if (isModified) {
       container.setAttribute(SNAHP_ATTR, 'true')
-      // only replace child nodes if something changed
-      container.childNodes[0].remove()
-      container.append(...nodes)
+      container.textContent = ''
+      container.append(...containerNodes)
     }
   }
 
@@ -170,8 +191,9 @@
     if (container.hasAttribute(SNAHP_ATTR)) {
       return
     }
-    const nodes = []
-    let currentNodes = nodes
+
+    const containerNodes = []
+    let nodes = containerNodes
     let urlFragment = null
     let isModified = false
     container.childNodes.forEach(node => {
@@ -195,37 +217,37 @@
               throw new Error(`Invalid fragmentType: ${match[CAPTURED.fragmentType]}`)
           }
           // add everything up to the match's index from the last match's index
-          snahp.utils.addTextNode(currentNodes, text.slice(lastIndex, match.index))
+          snahp.utils.addTextNode(nodes, text.slice(lastIndex, match.index))
           if (fragmentType === 'url' && !urlFragment) {
             // start catching elements until we see a "key" match
-            currentNodes = []
+            nodes = []
             urlFragment = match[CAPTURED.fragment]
           }
           // add the full match (we do this after so it will be collected in the correct array)
-          snahp.utils.addTextNode(currentNodes, match[CAPTURED.full])
-          if (fragmentType 'key' && urlFragment) {
+          snahp.utils.addTextNode(nodes, match[CAPTURED.full])
+          if (fragmentType === 'key' && urlFragment) {
             const keyFragment = match[CAPTURED.fragment]
-            const wrapper = snahp.fragments.createWrapper(currentNodes, urlFragment, keyFragment)
-            nodes.push(wrapper)
-            isModified = true
-            currentNodes = nodes
+            const wrapper = snahp.fragments.createWrapper(nodes, urlFragment, keyFragment)
+            containerNodes.push(wrapper)
+            nodes = containerNodes
             urlFragment = null
+            isModified = true
           }
           lastIndex = match.index + match[CAPTURED.full].length
         }
         // add the tail after the last match
-        snahp.utils.addTextNode(currentNodes, text.slice(lastIndex))
+        snahp.utils.addTextNode(nodes, text.slice(lastIndex))
       } else {
-        currentNodes.push(node)
+        nodes.push(node)
       }
     })
-    if (nodes !== currentNodes) {
-      nodes.push(...currentNodes)
+    if (containerNodes !== nodes) {
+      containerNodes.push(...nodes)
     }
     if (isModified) {
       container.setAttribute(SNAHP_ATTR, 'true')
       container.textContent = ''
-      container.append(...nodes)
+      container.append(...containerNodes)
     }
   }
 
