@@ -7,7 +7,7 @@
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
-// @downloadURL https://raw.githubusercontent.com/turkoid/userscripts/master/snahp1/snahp-helper.user.js
+// @downloadURL https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.user.js
 // ==/UserScript==
 
 /* global MutationObserver */
