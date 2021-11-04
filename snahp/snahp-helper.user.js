@@ -179,8 +179,8 @@
         const CAPTURED = { full: 0, fragment: 1, fragmentType: 2 }
         const text = node.nodeValue
         const matches = text.matchAll(MEGA_URL_FRAGMENT)
-        const matchDatas = []
 
+        let lastIndex = 0
         for (const match of matches) {
           let fragmentType = null
           switch (match[CAPTURED.fragmentType].toUpperCase()) {
@@ -194,33 +194,25 @@
             default:
               throw new Error(`Invalid fragmentType: ${match[CAPTURED.fragmentType]}`)
           }
-          matchDatas.push({ type: fragmentType, match: match })
-        }
-        matchDatas.sort((a, b) => {
-          return a.match.index - b.match.index
-        })
-
-        let lastIndex = 0
-        matchDatas.forEach(data => {
           // add everything up to the match's index from the last match's index
-          snahp.utils.addTextNode(currentNodes, text.slice(lastIndex, data.match.index))
-          if (data.type === 'url' && !urlFragment) {
+          snahp.utils.addTextNode(currentNodes, text.slice(lastIndex, match.index))
+          if (fragmentType === 'url' && !urlFragment) {
             // start catching elements until we see a "key" match
             currentNodes = []
-            urlFragment = data.match[CAPTURED.fragment]
+            urlFragment = match[CAPTURED.fragment]
           }
           // add the full match (we do this after so it will be collected in the correct array)
-          snahp.utils.addTextNode(currentNodes, data.match[CAPTURED.full])
-          if (data.type === 'key' && urlFragment) {
-            const keyFragment = data.match[CAPTURED.fragment]
+          snahp.utils.addTextNode(currentNodes, match[CAPTURED.full])
+          if (fragmentType 'key' && urlFragment) {
+            const keyFragment = match[CAPTURED.fragment]
             const wrapper = snahp.fragments.createWrapper(currentNodes, urlFragment, keyFragment)
             nodes.push(wrapper)
             isModified = true
             currentNodes = nodes
             urlFragment = null
           }
-          lastIndex = data.match.index + data.match[CAPTURED.full].length
-        })
+          lastIndex = match.index + match[CAPTURED.full].length
+        }
         // add the tail after the last match
         snahp.utils.addTextNode(currentNodes, text.slice(lastIndex))
       } else {
