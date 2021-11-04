@@ -40,11 +40,11 @@
 
   function observeDocument () {
     const contentNodes = document.querySelectorAll('div.post h3.first ~ div.content')
-    contentNodes.forEach(content => {
+    for (content of contentNodes) {
       snahp.checkHideBoxes(content)
       snahp.checkCodeElements(content)
       snahp.checkContent(content)
-    })
+    }
   }
 
   snahp.checkHideBoxes = function (container) {
@@ -54,11 +54,11 @@
      * </dl>
      */
     const hideBoxes = container.querySelectorAll(`dl.hidebox > dd:not([${SNAHP_ATTR}])`)
-    hideBoxes.forEach(hideBox => {
+    for (const hideBox of hideBoxes) {
       snahp.findEncodedUrls(hideBox)
       snahp.findUrls(hideBox)
-      snahp.findUrlFragments(container)
-    })
+      snahp.findUrlFragments(hideBox)
+    }
   }
 
   snahp.checkCodeElements = function (container) {
@@ -66,11 +66,11 @@
      * <code>??</code>
      */
     const codeElements = container.querySelectorAll(`code:not([${SNAHP_ATTR}])`)
-    codeElements.forEach(codeElement => {
+    for (const codeElement of codeElements) {
       snahp.findEncodedUrls(codeElement)
       snahp.findUrls(codeElement)
-      snahp.findUrlFragments(container)
-    })
+      snahp.findUrlFragments(codeElement)
+    }
   }
 
   snahp.checkContent = function (container) {
@@ -196,7 +196,7 @@
     let nodes = containerNodes
     let urlFragment = null
     let isModified = false
-    container.childNodes.forEach(node => {
+    for (const node of container.childNodes) {
       if (node.nodeType === TEXT_NODE_TYPE) {
         const CAPTURED = { full: 0, fragment: 1, fragmentType: 2 }
         const text = node.nodeValue
