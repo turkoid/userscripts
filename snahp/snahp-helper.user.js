@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     1.1.0
+// @version     1.1.1
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -40,7 +40,7 @@
 
   function observeDocument () {
     const contentNodes = document.querySelectorAll('div.post h3.first ~ div.content')
-    for (content of contentNodes) {
+    for (const content of contentNodes) {
       snahp.checkHideBoxes(content)
       snahp.checkCodeElements(content)
       snahp.checkContent(content)
@@ -240,7 +240,7 @@
       } else {
         nodes.push(node)
       }
-    })
+    }
     if (containerNodes !== nodes) {
       containerNodes.push(...nodes)
     }
