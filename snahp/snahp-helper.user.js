@@ -162,7 +162,7 @@
         for (const match of matches) {
           snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
           const url = snahp.utils.updateUrl(match[0])
-          const link = snahp.dom.createLink(url)
+          const link = snahp.dom.createLink(url, match[0])
           nodes.push(link)
           lastIndex = match.index + match[0].length
           isModified = true
@@ -338,10 +338,11 @@
   }
 
   snahp.base64.createDecodedElement = function (decodedValue) {
+    const originalValue = decodedValue
     decodedValue = snahp.utils.fixPartialUrl(decodedValue)
     if (snahp.utils.isUrl(decodedValue)) {
       decodedValue = snahp.utils.updateUrl(decodedValue)
-      return snahp.dom.createLink(decodedValue)
+      return snahp.dom.createLink(decodedValue, originalValue)
     } else {
       return snahp.dom.createSpan(decodedValue)
     }
