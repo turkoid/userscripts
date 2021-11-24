@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.0.2
+// @version     2.0.3
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -43,6 +43,33 @@
   const URL = /(?<=^|\s)(https?):\/\/(([a-z.-]+)(\S*))(?=\s|$)/ig
   const PARTIAL_URL = /(?<=^|\s)(http|ttp|tp|p|https|ttps|tps|ps|s):\/\/(([a-z.-]+)(\S*))(?=\s|$)/ig
   const TEXT_NODE_TYPE = 3
+  const GLOBAL_STYLE = `
+    .snahp-border {
+      border: 1px solid #de7300;
+    }
+
+    .snahp-highlight-fragment {
+      background-color: #3cdc3c;
+      color: #171717;
+    }
+
+    #snahp-container {
+      background-color: #171717;
+      padding: 5px;
+      margin: 5px 0;
+      display: block;
+    }
+
+    .snahp-button {
+      margin: 2px 0;
+    }
+
+    input[type="image"].snahp-button {
+      padding: 0px;
+    }
+
+
+  `
 
   snahp.scan = function (container) {
     /**
@@ -172,7 +199,7 @@
   snahp.base64.createButton = function (container, img, fn) {
     const btn = snahp.dom.createElement('input')
     btn.type = 'image'
-    btn.classList.add('snahp-button')
+    btn.classList.add('snahp-button', 'snahp-border')
     btn.src = img
     btn.style.display = 'none'
     btn.addEventListener('click', evt => fn(container))
@@ -448,34 +475,13 @@
     }
 
     const style = snahp.dom.createElement('style')
-    style.innerHTML = `
-      .snahp-highlight-fragment {
-        background-color: #3cdc3c;
-        color: #171717;
-      }
-
-      #snahp-container {
-        background-color: #171717;
-        border: 1px solid #de7300;
-        padding: 5px;
-        margin-bottom: 5px;
-        display: block;
-      }
-
-      .snahp-button {
-        border: 1px solid #de7300;
-        margin-bottom: 2px;
-      }
-
-      input[type="image"].snahp-button {
-        padding: 0px;
-      }
-    `
+    style.innerHTML = GLOBAL_STYLE
     document.head.append(style)
 
     const container = snahp.dom.createElement('div')
     container.style.display = 'none'
     container.id = SNAHP_CONTAINER
+    container.classList.add('snahp-border')
     for (const [id, title] of [[SNAHP_BASE64_SECTION, 'Base64'], [SNAHP_URLS_SECTION, 'Urls'], [SNAHP_FRAGMENTS_SECTION, 'Fragments']]) {
       const section = snahp.dom.createElement('div')
       section.id = id
