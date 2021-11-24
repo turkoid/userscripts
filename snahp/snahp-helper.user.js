@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.0.3
+// @version     2.1.3
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -48,7 +48,7 @@
       border: 1px solid #de7300;
     }
 
-    .snahp-highlight-fragment {
+    .snahp-highlight {
       background-color: #3cdc3c;
       color: #171717;
     }
@@ -67,8 +67,6 @@
     input[type="image"].snahp-button {
       padding: 0px;
     }
-
-
   `
 
   snahp.scan = function (container) {
@@ -159,27 +157,28 @@
 
   snahp.base64.createContainer = function (encodedValue, decodedValue) {
     const container = snahp.dom.createElement('div')
-    const encodeButton = snahp.base64.createButton(container, REVERT_IMAGE, snahp.base64.encode)
-    const decodeButton = snahp.base64.createButton(container, BASE64_IMAGE, snahp.base64.decode)
     const encodedElement = snahp.base64.createEncodedElement(encodedValue)
     const decodedElement = snahp.base64.createDecodedElement(decodedValue)
-    container.append(encodeButton, decodeButton, encodedElement, decodedElement)
-    snahp.base64.decode(container)
+    const encodeButton = snahp.base64.createButton(container, 'encode', decodedElement)
+    const decodeButton = snahp.base64.createButton(container, 'decode', encodedElement)
+    const newLine = snahp.dom.createElement('br')
+    container.append(encodeButton, decodeButton, newLine, encodedElement, decodedElement)
+    snahp.base64.toggleElements(container, 'decode')
     return container
   }
 
   snahp.base64.toggleElements = function (container, op) {
-    const [encodeButton, decodeButton, encodedElement, decodedElement] = container.children
+    const [encodeButton, decodeButton, _, encodedElement, decodedElement] = container.children
     switch (op) {
       case 'encode':
         decodedElement.style.display = 'none'
         encodeButton.style.display = 'none'
-        encodedElement.style.display = 'block'
-        decodeButton.style.display = 'block'
+        encodedElement.style.display = 'inline'
+        decodeButton.style.display = 'inline'
         break
       case 'decode':
-        decodedElement.style.display = 'block'
-        encodeButton.style.display = 'block'
+        decodedElement.style.display = 'inline'
+        encodeButton.style.display = 'inline'
         encodedElement.style.display = 'none'
         decodeButton.style.display = 'none'
         break
@@ -188,21 +187,15 @@
     }
   }
 
-  snahp.base64.encode = function (container) {
-    snahp.base64.toggleElements(container, 'encode')
-  }
-
-  snahp.base64.decode = function (container) {
-    snahp.base64.toggleElements(container, 'decode')
-  }
-
-  snahp.base64.createButton = function (container, img, fn) {
+  snahp.base64.createButton = function (container, op, element) {
     const btn = snahp.dom.createElement('input')
     btn.type = 'image'
     btn.classList.add('snahp-button', 'snahp-border')
-    btn.src = img
+    btn.src = op === 'encode' ? REVERT_IMAGE : BASE64_IMAGE
     btn.style.display = 'none'
-    btn.addEventListener('click', evt => fn(container))
+    btn.addEventListener('click', evt => snahp.base64.toggleElements(container, op))
+    btn.addEventListener('mouseenter', evt => element.classList.add('snahp-highlight'))
+    btn.addEventListener('mouseleave', evt => element.classList.remove('snahp-highlight'))
     return btn
   }
 
@@ -218,6 +211,7 @@
     isModified = isModified || snahp.urls.search(textNode, true)
     isModified = isModified || snahp.fragments.search([textNode])
     if (isModified) {
+      // find adjacent link and add a newline between them
       for (const element of container.children) {
         const nextElement = element.nextElementSibling
         if (nextElement && element.nodeName === 'A' && nextElement.nodeName === 'A') {
@@ -347,12 +341,12 @@
       container = snahp.dom.createSpan(`${id?.textContent ?? '?'} + ${key?.textContent ?? '?'}`)
     }
     container.addEventListener('mouseenter', evt => {
-      if (id) id.classList.add('snahp-highlight-fragment')
-      if (key) key.classList.add('snahp-highlight-fragment')
+      if (id) id.classList.add('snahp-highlight')
+      if (key) key.classList.add('snahp-highlight')
     })
     container.addEventListener('mouseleave', evt => {
-      if (id) id.classList.remove('snahp-highlight-fragment')
-      if (key) key.classList.remove('snahp-highlight-fragment')
+      if (id) id.classList.remove('snahp-highlight')
+      if (key) key.classList.remove('snahp-highlight')
     })
     return container
   }
