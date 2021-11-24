@@ -1,20 +1,24 @@
 // ==UserScript==
 // @name        No RickRoll
 // @namespace   turkoid
-// @include     /^https?://(.*\.)?reddit\.com.*$/
+// @match       https://*.reddit.com/*
 // @grant       none
-// @version     1.0
+// @version     2.0
 // @author      turkoid
 // @description Adds a Rick Astley image to links that contain the infamous youtube video
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/no-rickroll/no-rickroll.meta.js
 // @downloadURL https://raw.githubusercontent.com/turkoid/userscripts/master/no-rickroll/no-rickroll.user.js
 // ==/UserScript==
 
-(function () {
-  'use strict';
+/* global MutationObserver */
 
-  const observer = new MutationObserver(blockRicks);
-  const rickAstleyImage =
+(function () {
+  'use strict'
+
+  const $ = {}
+
+  const RICK_BLOCKED_ATTR = 'rick-blocked'
+  const RICK_ASTLEY =
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAdCAYAAADLnm6HAAAJQElEQVRIx4WWW2ycx3mGn5n5T7v773J3SZHiQdT' +
       'JpCuxdmBUKGyhASRAQACjLdq4Swe9qotCvmkKtL7pRQGSRQskF0WBokAbuU1y4bYIWcCFgcZNnVqxE8euYzuOLepg62RKIkWKFI+7+59mvl7Y' +
       'LmyJRuZqZm6+B++83/uN4jNLZmcNk5Puxn98+6mtcy/+80c3rlpFaN668gG3ttdZ78BObjGej9E+WhtqUQ/9jSa99R76e/ewvr1BKQ5t1Ninw' +
@@ -44,26 +48,45 @@
       'bdeVqr3GedE/Hv+t47fOTp31Ts6cLL4IQE9NiW61WkYpJWfefjt/7q+//dX33jn7/IXF9/csJ21Z7baVE0VROPLcktmCQjlSl7C8cYtbH31As' +
       'raGmIzErSOSYaISut63AnBi5qSdmprSIqJERN373P9/8dbZi30/een7X7907o2/OHf5Nb1B4lyh9GMTx+i3AZ3NFZS2+IFHKQgJlcbZAmMqNB' +
       'sjNJrDhJU6JghElcuEIxNpx5pnhh4c+O6xY8OdL+yC/37+ra9cf/edL1+7/t7k4vKlsQ8+OkcXK05EddOEX5t4lMOVfpLb1yhsG6cc5VKZcik' +
-      'iwCOMmsSNEeJSg6gcY0oBeCF+/wNs25AfvPz8G+WK+bvf/L2v/qRW63GPPTa+9Nk4/j+HDGTarLYG7AAAAABJRU5ErkJggg==';
+      'iwCOMmsSNEeJSg6gcY0oBeCF+/wNs25AfvPz8G+WK+bvf/L2v/qRW63GPPTa+9Nk4/j+HDGTarLYG7AAAAABJRU5ErkJggg=='
+  const GLOBAL_STYLE = `
+    img.rick-astley {
+      background: url(${RICK_ASTLEY}) no-repeat center;
+      display: inline;
+      width: 32px;
+      height: 29px;
+      border: #000000 solid 2px;
+      margin-right: 2px;
+    }
+  `
 
-  function blockRicks() {
-    let rickRolls = document.querySelectorAll('a[href*="dQw4w9WgXcQ"]:not([rick-blocked])');
-    rickRolls.forEach(rickRoll => {
-      blockThatRick(rickRoll);
-    });
+  $.blockRick = function (link) {
+    link.setAttribute(RICK_BLOCKED_ATTR, 'true')
+    const img = document.createElement('img')
+    img.classList.add('rick-astley')
+    link.parentElement.insertBefore(img, link)
   }
 
-  function blockThatRick(el) {
-    el.setAttribute('rick-blocked', 'true');
-    let rickAstley = document.createElement('img');
-    rickAstley.src = rickAstleyImage;
-    el.appendChild(rickAstley);
+  $.scan = function () {
+    const rickRolls = document.querySelectorAll(`a[href*="v=dQw4w9WgXcQ"]:not([${RICK_BLOCKED_ATTR}])`)
+    for (const link of rickRolls) {
+      $.blockRick(link)
+    }
   }
 
-  blockRicks();
+  $.init = function () {
+    const style = document.createElement('style')
+    style.innerHTML = GLOBAL_STYLE
+    document.head.append(style)
 
-  observer.observe(document, {
-    childList: true,
-    subtree: true,
-  });
-})();
+    $.scan()
+
+    const observer = new MutationObserver($.scan)
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    })
+  }
+
+  $.init()
+})()
