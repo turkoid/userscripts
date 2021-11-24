@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name        Snahp Helper
 // @namespace   turkoid
-// @match       https://fora.$.eu/*
+// @match       https://snahp.url/*
 // @grant       none
-// @version     2.1.5
+// @version     2.1.6
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -26,8 +26,8 @@
 
   const MEGA_DOMAIN = 'mega.nz'
   const BROKEN_DOMAINS = {
-    'fora.$.eu': ['forum.$.it'],
-    'lnk.$.eu': ['links.$.it'],
+    'snahp.url': ['forum.snahp.it'],
+    'snahp.link.url': ['links.snahp.it'],
     [MEGA_DOMAIN]: ['.nz']
   }
   const SNAHP_ATTR = 'Snahpd'
