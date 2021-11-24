@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.1.3
+// @version     2.1.4
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -168,7 +168,7 @@
   }
 
   snahp.base64.toggleElements = function (container, op) {
-    const [encodeButton, decodeButton, _, encodedElement, decodedElement] = container.children
+    const [encodeButton, decodeButton, , encodedElement, decodedElement] = container.children
     switch (op) {
       case 'encode':
         decodedElement.style.display = 'none'
