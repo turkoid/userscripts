@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://fora.$.eu/*
 // @grant       none
-// @version     2.1.4
+// @version     2.1.5
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -21,8 +21,7 @@
     utils: {},
     base64: {},
     urls: {},
-    fragments: {},
-    mutations: {}
+    fragments: {}
   }
 
   const MEGA_DOMAIN = 'mega.nz'
@@ -461,7 +460,15 @@
     container.style.display = 'block'
   }
 
-  $.mutations.init = function () {
+  $.observe = function (mutations, observer) {
+    for (const mut of mutations) {
+      for (const addedNode of mut.addedNodes) {
+        $.scan(addedNode)
+      }
+    }
+  }
+
+  $.init = function () {
     const selector = 'div.post h3.first ~ div.content'
     const originalPost = document.querySelector(selector)
     if (!originalPost) {
@@ -495,29 +502,11 @@
       $.scan(post)
     }
     // only attach observer to the original post
-    const observer = new MutationObserver($.mutations.observe)
+    const observer = new MutationObserver($.observe)
     observer.observe(originalPost, {
       childList: true,
       subtree: true
     })
-  }
-
-  $.mutations.observe = function (mutations, observer) {
-    for (const mut of mutations) {
-      for (const addedNode of mut.addedNodes) {
-        $.scan(addedNode)
-      }
-    }
-  }
-
-  $.init = function () {
-    if (document.readyState === 'loading') {
-      document.addEventListener('readystatechange', event => {
-        $.mutations.init()
-      })
-    } else {
-      $.mutations.init()
-    }
   }
 
   $.init()
