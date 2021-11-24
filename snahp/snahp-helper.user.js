@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.1.6
+// @version     2.1.7
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -472,7 +472,8 @@
     const selector = 'div.post h3.first ~ div.content'
     const originalPost = document.querySelector(selector)
     if (!originalPost) {
-      throw new Error(`selector "${selector}" not found!!`)
+      console.debug(`selector "${selector}" not found!!`)
+      return
     }
 
     const style = $.dom.createElement('style')
