@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Snahp Helper
 // @namespace   turkoid
-// @match       https://snahp.url/*
+// @match       https://fora.$.eu/*
 // @grant       none
 // @version     2.1.4
 // @author      turkoid
@@ -16,7 +16,7 @@
 (function () {
   'use strict'
 
-  var snahp = {
+  const $ = {
     dom: {},
     utils: {},
     base64: {},
@@ -27,8 +27,8 @@
 
   const MEGA_DOMAIN = 'mega.nz'
   const BROKEN_DOMAINS = {
-    'snahp.url': ['forum.snahp.it'],
-    'snahp.link.url': ['links.snahp.it'],
+    'fora.$.eu': ['forum.$.it'],
+    'lnk.$.eu': ['links.$.it'],
     [MEGA_DOMAIN]: ['.nz']
   }
   const SNAHP_ATTR = 'Snahpd'
@@ -69,7 +69,7 @@
     }
   `
 
-  snahp.scan = function (container) {
+  $.scan = function (container) {
     /**
      * Perform a bread-first search for textnodes
      * Perform any number of search functions on that node
@@ -84,14 +84,14 @@
     while (queue.length) {
       const [level, node] = queue.shift()
       if (level > currentLevel) {
-        snahp.fragments.search(textNodes)
+        $.fragments.search(textNodes)
         currentLevel = level
         textNodes = []
       }
       if (node.nodeType === TEXT_NODE_TYPE) {
         let isModified = false
-        isModified = isModified || snahp.base64.search(node)
-        isModified = isModified || snahp.urls.search(node)
+        isModified = isModified || $.base64.search(node)
+        isModified = isModified || $.urls.search(node)
         if (!isModified) {
           textNodes.push(node)
         }
@@ -103,7 +103,7 @@
     }
   }
 
-  snahp.base64.search = function (node) {
+  $.base64.search = function (node) {
     /**
      * Find all base64 strings and decode up to 3 times
      * A valid decoded value is a partial url or url fragment
@@ -129,45 +129,45 @@
         decodedValue = atob(decodedValue)
         decodeCount++
         BASE64_CHARS.lastIndex = 0
-        isDecoded = snahp.utils.isPatternFound(PARTIAL_URL, decodedValue) || snahp.utils.isPatternFound(MEGA_URL_FRAGMENT, decodedValue)
+        isDecoded = $.utils.isPatternFound(PARTIAL_URL, decodedValue) || $.utils.isPatternFound(MEGA_URL_FRAGMENT, decodedValue)
       } while (decodeCount < 3 && !isDecoded)
       if (isDecoded) {
-        snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
-        const container = snahp.base64.createContainer(encodedValue, decodedValue)
+        $.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
+        const container = $.base64.createContainer(encodedValue, decodedValue)
         nodes.push(container)
         isModified = true
       } else {
-        snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index + encodedValue.length))
+        $.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index + encodedValue.length))
       }
       lastIndex = match.index + encodedValue.length
     }
-    snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
+    $.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
 
     if (isModified) {
-      const container = snahp.dom.createContainer(nodes)
+      const container = $.dom.createContainer(nodes)
       node.replaceWith(container)
     }
 
     return isModified
   }
 
-  snahp.base64.addSectionItems = function (items) {
-    snahp.utils.addItemsToSection(items, SNAHP_BASE64_SECTION)
+  $.base64.addSectionItems = function (items) {
+    $.utils.addItemsToSection(items, SNAHP_BASE64_SECTION)
   }
 
-  snahp.base64.createContainer = function (encodedValue, decodedValue) {
-    const container = snahp.dom.createElement('div')
-    const encodedElement = snahp.base64.createEncodedElement(encodedValue)
-    const decodedElement = snahp.base64.createDecodedElement(decodedValue)
-    const encodeButton = snahp.base64.createButton(container, 'encode', decodedElement)
-    const decodeButton = snahp.base64.createButton(container, 'decode', encodedElement)
-    const newLine = snahp.dom.createElement('br')
+  $.base64.createContainer = function (encodedValue, decodedValue) {
+    const container = $.dom.createElement('div')
+    const encodedElement = $.base64.createEncodedElement(encodedValue)
+    const decodedElement = $.base64.createDecodedElement(decodedValue)
+    const encodeButton = $.base64.createButton(container, 'encode', decodedElement)
+    const decodeButton = $.base64.createButton(container, 'decode', encodedElement)
+    const newLine = $.dom.createElement('br')
     container.append(encodeButton, decodeButton, newLine, encodedElement, decodedElement)
-    snahp.base64.toggleElements(container, 'decode')
+    $.base64.toggleElements(container, 'decode')
     return container
   }
 
-  snahp.base64.toggleElements = function (container, op) {
+  $.base64.toggleElements = function (container, op) {
     const [encodeButton, decodeButton, , encodedElement, decodedElement] = container.children
     switch (op) {
       case 'encode':
@@ -187,54 +187,54 @@
     }
   }
 
-  snahp.base64.createButton = function (container, op, element) {
-    const btn = snahp.dom.createElement('input')
+  $.base64.createButton = function (container, op, element) {
+    const btn = $.dom.createElement('input')
     btn.type = 'image'
     btn.classList.add('snahp-button', 'snahp-border')
     btn.src = op === 'encode' ? REVERT_IMAGE : BASE64_IMAGE
     btn.style.display = 'none'
-    btn.addEventListener('click', evt => snahp.base64.toggleElements(container, op))
+    btn.addEventListener('click', evt => $.base64.toggleElements(container, op))
     btn.addEventListener('mouseenter', evt => element.classList.add('snahp-highlight'))
     btn.addEventListener('mouseleave', evt => element.classList.remove('snahp-highlight'))
     return btn
   }
 
-  snahp.base64.createEncodedElement = function (encodedValue) {
-    return snahp.dom.createSpan(encodedValue)
+  $.base64.createEncodedElement = function (encodedValue) {
+    return $.dom.createSpan(encodedValue)
   }
 
-  snahp.base64.createDecodedElement = function (decodedValue) {
-    const container = snahp.dom.createElement('div')
+  $.base64.createDecodedElement = function (decodedValue) {
+    const container = $.dom.createElement('div')
     const textNode = document.createTextNode(decodedValue)
     container.append(textNode)
     let isModified = false
-    isModified = isModified || snahp.urls.search(textNode, true)
-    isModified = isModified || snahp.fragments.search([textNode])
+    isModified = isModified || $.urls.search(textNode, true)
+    isModified = isModified || $.fragments.search([textNode])
     if (isModified) {
       // find adjacent link and add a newline between them
       for (const element of container.children) {
         const nextElement = element.nextElementSibling
         if (nextElement && element.nodeName === 'A' && nextElement.nodeName === 'A') {
-          container.insertBefore(snahp.dom.createElement('br'), nextElement)
+          container.insertBefore($.dom.createElement('br'), nextElement)
         }
       }
       return container
     }
-    if (snahp.utils.isPatternFound(PARTIAL_URL, decodedValue)) {
-      let decodedUrl = snahp.utils.fixPartialUrl(decodedValue)
-      decodedUrl = snahp.utils.updateUrl(decodedUrl)
-      return snahp.dom.createLink(decodedUrl, decodedValue)
+    if ($.utils.isPatternFound(PARTIAL_URL, decodedValue)) {
+      let decodedUrl = $.utils.fixPartialUrl(decodedValue)
+      decodedUrl = $.utils.updateUrl(decodedUrl)
+      return $.dom.createLink(decodedUrl, decodedValue)
     } else {
-      return snahp.dom.createSpan(decodedValue)
+      return $.dom.createSpan(decodedValue)
     }
   }
 
-  snahp.urls.search = function (node, allowPartial = false) {
+  $.urls.search = function (node, allowPartial = false) {
     /**
      * find all urls in the text that is not a child of a link
      */
     const pattern = allowPartial ? PARTIAL_URL : URL
-    if (node.nodeType !== TEXT_NODE_TYPE || (snahp.utils.isPatternFound(pattern, node.value) && node.parentElement?.closest('a'))) {
+    if (node.nodeType !== TEXT_NODE_TYPE || ($.utils.isPatternFound(pattern, node.value) && node.parentElement?.closest('a'))) {
       return false
     }
 
@@ -244,30 +244,30 @@
     const nodes = []
     let lastIndex = 0
     for (const match of matches) {
-      snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
+      $.utils.addTextNode(nodes, nodeValue.slice(lastIndex, match.index))
       const text = match[0]
       let href = text
       if (allowPartial) {
-        href = snahp.utils.fixPartialUrl(href)
+        href = $.utils.fixPartialUrl(href)
       }
-      href = snahp.utils.updateUrl(href)
-      const link = snahp.dom.createLink(href, text)
+      href = $.utils.updateUrl(href)
+      const link = $.dom.createLink(href, text)
       nodes.push(link)
       lastIndex = match.index + text.length
       isModified = true
     }
-    snahp.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
+    $.utils.addTextNode(nodes, nodeValue.slice(lastIndex))
     if (isModified) {
       node.replaceWith(...nodes)
     }
     return isModified
   }
 
-  snahp.urls.addSectionItems = function (items) {
-    snahp.utils.addItemsToSection(items, SNAHP_URLS_SECTION)
+  $.urls.addSectionItems = function (items) {
+    $.utils.addItemsToSection(items, SNAHP_URLS_SECTION)
   }
 
-  snahp.fragments.search = function (nodes) {
+  $.fragments.search = function (nodes) {
     /**
      * find all url fragments and place them in the top level post container
      * hovering over the combined fragments when highlight the matches
@@ -287,7 +287,7 @@
       for (const match of matches) {
         const fragment = match[0]
         const fragmentType = match[1]
-        snahp.utils.addTextNode(replaceNodes, nodeValue.slice(lastIndex, match.index))
+        $.utils.addTextNode(replaceNodes, nodeValue.slice(lastIndex, match.index))
         let fragments
         switch (fragmentType.toUpperCase()) {
           case '#F!': // folder
@@ -300,12 +300,12 @@
           default:
             throw new Error(`Invalid fragmentType: ${fragmentType}`)
         }
-        const span = snahp.dom.createSpan(fragment)
+        const span = $.dom.createSpan(fragment)
         fragments.push(span)
         replaceNodes.push(span)
         lastIndex = match.index + fragment.length
       }
-      snahp.utils.addTextNode(replaceNodes, nodeValue.slice(lastIndex))
+      $.utils.addTextNode(replaceNodes, nodeValue.slice(lastIndex))
       if (replaceNodes.length > 0) {
         isModified = true
         node.replaceWith(...replaceNodes)
@@ -320,25 +320,25 @@
       const zipped = longest.map((_, i) => [ids, keys].map(fragments => fragments[i]))
       const sectionItems = []
       for (const [id, key] of zipped) {
-        const sectionItem = snahp.fragments.createContainer(id, key)
+        const sectionItem = $.fragments.createContainer(id, key)
         sectionItems.push(sectionItem)
       }
-      snahp.fragments.addSectionItems(sectionItems)
+      $.fragments.addSectionItems(sectionItems)
     }
 
     return isModified
   }
 
-  snahp.fragments.addSectionItems = function (items) {
-    snahp.utils.addItemsToSection(items, SNAHP_FRAGMENTS_SECTION)
+  $.fragments.addSectionItems = function (items) {
+    $.utils.addItemsToSection(items, SNAHP_FRAGMENTS_SECTION)
   }
 
-  snahp.fragments.createContainer = function (id, key) {
+  $.fragments.createContainer = function (id, key) {
     let container
     if (id && key) {
-      container = snahp.dom.createLink(`https://${MEGA_DOMAIN}/${id.textContent}${key.textContent}`)
+      container = $.dom.createLink(`https://${MEGA_DOMAIN}/${id.textContent}${key.textContent}`)
     } else {
-      container = snahp.dom.createSpan(`${id?.textContent ?? '?'} + ${key?.textContent ?? '?'}`)
+      container = $.dom.createSpan(`${id?.textContent ?? '?'} + ${key?.textContent ?? '?'}`)
     }
     container.addEventListener('mouseenter', evt => {
       if (id) id.classList.add('snahp-highlight')
@@ -351,20 +351,20 @@
     return container
   }
 
-  snahp.dom.createElement = function (name) {
+  $.dom.createElement = function (name) {
     const element = document.createElement(name)
     element.setAttribute(SNAHP_ATTR, 'true')
     return element
   }
 
-  snahp.dom.createSpan = function (text) {
-    const span = snahp.dom.createElement('span')
+  $.dom.createSpan = function (text) {
+    const span = $.dom.createElement('span')
     span.textContent = text
     return span
   }
 
-  snahp.dom.createLink = function (href, text = href) {
-    const link = snahp.dom.createElement('a')
+  $.dom.createLink = function (href, text = href) {
+    const link = $.dom.createElement('a')
     link.href = href
     link.textContent = text
     link.target = '_blank'
@@ -372,13 +372,13 @@
     return link
   }
 
-  snahp.dom.createContainer = function (nodes) {
-    const container = snahp.dom.createElement('div')
+  $.dom.createContainer = function (nodes) {
+    const container = $.dom.createElement('div')
     container.append(...nodes)
     return container
   }
 
-  snahp.utils.addTextNode = function (nodes, value) {
+  $.utils.addTextNode = function (nodes, value) {
     /**
      * adds a text node to the array or updates the last one if already a text node.
      */
@@ -390,7 +390,7 @@
     }
   }
 
-  snahp.utils.isPatternFound = function (regex, string) {
+  $.utils.isPatternFound = function (regex, string) {
     /**
      * handles a quirk with running regexp.test as it will update lastIndex and not reset each time.
      */
@@ -401,7 +401,7 @@
     return result
   }
 
-  snahp.utils.fixPartialUrl = function (text) {
+  $.utils.fixPartialUrl = function (text) {
     /**
      * will try to fix urls.
      * For example if a base64 string is decoded and it's "ttps://example.com",
@@ -423,7 +423,7 @@
     return parts.join('')
   }
 
-  snahp.utils.updateUrl = function (url) {
+  $.utils.updateUrl = function (url) {
     /**
      * update old domains to the new ones
      */
@@ -444,7 +444,7 @@
     return url
   }
 
-  snahp.utils.addItemsToSection = function (items, sectionId) {
+  $.utils.addItemsToSection = function (items, sectionId) {
     if (!items?.length) {
       return
     }
@@ -452,7 +452,7 @@
     const section = document.getElementById(sectionId)
     const list = section.childNodes[1]
     items = items.slice().map(item => {
-      const listItem = snahp.dom.createElement('li')
+      const listItem = $.dom.createElement('li')
       listItem.append(item)
       return listItem
     })
@@ -461,28 +461,28 @@
     container.style.display = 'block'
   }
 
-  snahp.mutations.init = function () {
+  $.mutations.init = function () {
     const selector = 'div.post h3.first ~ div.content'
     const originalPost = document.querySelector(selector)
     if (!originalPost) {
       throw new Error(`selector "${selector}" not found!!`)
     }
 
-    const style = snahp.dom.createElement('style')
+    const style = $.dom.createElement('style')
     style.innerHTML = GLOBAL_STYLE
     document.head.append(style)
 
-    const container = snahp.dom.createElement('div')
+    const container = $.dom.createElement('div')
     container.style.display = 'none'
     container.id = SNAHP_CONTAINER
     container.classList.add('snahp-border')
     for (const [id, title] of [[SNAHP_BASE64_SECTION, 'Base64'], [SNAHP_URLS_SECTION, 'Urls'], [SNAHP_FRAGMENTS_SECTION, 'Fragments']]) {
-      const section = snahp.dom.createElement('div')
+      const section = $.dom.createElement('div')
       section.id = id
       section.style.display = 'none'
-      const heading = snahp.dom.createElement('h4')
+      const heading = $.dom.createElement('h4')
       heading.textContent = title
-      const ul = snahp.dom.createElement('ul')
+      const ul = $.dom.createElement('ul')
       section.append(heading)
       section.append(ul)
       container.append(section)
@@ -492,33 +492,33 @@
     // do a one time scan of all posts
     const posts = document.querySelectorAll('div.post div.content')
     for (const post of posts) {
-      snahp.scan(post)
+      $.scan(post)
     }
     // only attach observer to the original post
-    const observer = new MutationObserver(snahp.mutations.observe)
+    const observer = new MutationObserver($.mutations.observe)
     observer.observe(originalPost, {
       childList: true,
       subtree: true
     })
   }
 
-  snahp.mutations.observe = function (mutations, observer) {
+  $.mutations.observe = function (mutations, observer) {
     for (const mut of mutations) {
       for (const addedNode of mut.addedNodes) {
-        snahp.scan(addedNode)
+        $.scan(addedNode)
       }
     }
   }
 
-  snahp.init = function () {
+  $.init = function () {
     if (document.readyState === 'loading') {
       document.addEventListener('readystatechange', event => {
-        snahp.mutations.init()
+        $.mutations.init()
       })
     } else {
-      snahp.mutations.init()
+      $.mutations.init()
     }
   }
 
-  snahp.init()
+  $.init()
 })()
