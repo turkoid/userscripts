@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.0.0
+// @version     2.0.1
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -172,6 +172,7 @@
   snahp.base64.createButton = function (container, img, fn) {
     const btn = snahp.dom.createElement('input')
     btn.type = 'image'
+    btn.classList.add('snahp-button')
     btn.src = img
     btn.style.display = 'none'
     btn.addEventListener('click', evt => fn(container))
@@ -455,12 +456,19 @@
 
       #snahp-container {
         background-color: #171717;
-        border-style: solid;
-        border-width: 1px;
-        border-color: #de7300;
+        border: 1px solid #de7300
         padding: 5px;
         margin-bottom: 5px;
-        display: block
+        display: block;
+      }
+
+      .snahp-button {
+        border: 1px solid #de7300;
+        margin-bottom: 2px;
+      }
+
+      input[type="image"].snahp-button {
+        padding: 0px;
       }
     `
     document.head.append(style)
