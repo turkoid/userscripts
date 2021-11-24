@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.0.1
+// @version     2.0.2
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -456,7 +456,7 @@
 
       #snahp-container {
         background-color: #171717;
-        border: 1px solid #de7300
+        border: 1px solid #de7300;
         padding: 5px;
         margin-bottom: 5px;
         display: block;
