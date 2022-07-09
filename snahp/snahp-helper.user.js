@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.2.1
+// @version     2.2.2
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -130,7 +130,7 @@
         decodeCount++
         BASE64_CHARS.lastIndex = 0
         isDecoded = $.utils.isPatternFound(PARTIAL_URL, decodedValue) || $.utils.isPatternFound(MEGA_URL_FRAGMENT, decodedValue)
-        isDecoded = isDecoded || decodeCount === softMaxDecodeCount
+        isDecoded = isDecoded || (decodeCount === softMaxDecodeCount && nodeValue.slice(0, match.index).toLowerCase().includes('key '))
       } while (decodeCount < 3 && !isDecoded)
       if (isDecoded) {
         if (decodeCount > softMaxDecodeCount) {
@@ -505,10 +505,12 @@
     // do a one time scan of all posts
     const posts = document.querySelectorAll('div.post div.content')
     for (const post of posts) {
+      softMaxDecodeCount = 0
       $.scan(post)
     }
     // only attach observer to the original post
     const observer = new MutationObserver($.observe)
+    softMaxDecodeCount = 0
     observer.observe(originalPost, {
       childList: true,
       subtree: true
