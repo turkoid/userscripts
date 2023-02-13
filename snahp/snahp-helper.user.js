@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.2.2
+// @version     2.3.0
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -95,7 +95,7 @@
         if (!isModified) {
           textNodes.push(node)
         }
-      } else if (!node.hasAttribute(SNAHP_ATTR)) {
+      } else if (!$.utils.isAnchorElement(node) && !node.hasAttribute(SNAHP_ATTR)) {
         for (const childNode of node.childNodes) {
           queue.push([level + 1, childNode])
         }
@@ -380,6 +380,10 @@
     const container = $.dom.createElement('div')
     container.append(...nodes)
     return container
+  }
+
+  $.utils.isAnchorElement = function (node) {
+    return node.nodeType === 1 && node.tagName === 'A'
   }
 
   $.utils.addTextNode = function (nodes, value) {
