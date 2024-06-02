@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://*.reddit.com/*
 // @grant       none
-// @version     2.0
+// @version     2.1
 // @author      turkoid
 // @description Adds a Rick Astley image to links that contain the infamous youtube video
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/no-rickroll/no-rickroll.meta.js
@@ -68,8 +68,11 @@
   }
 
   $.scan = function () {
-    const rickRolls = document.querySelectorAll(`a[href*="v=dQw4w9WgXcQ"]:not([${RICK_BLOCKED_ATTR}])`)
-    for (const link of rickRolls) {
+    const youtubeLinks = document.querySelectorAll('a[href*="youtube.com"], a[href*="youtu.be"]');
+    const rickrollLinks = Array.from(youtubeLinks).filter(link =>
+      link.href.includes('dQw4w9WgXcQ') && !link.hasAttribute(RICK_BLOCKED_ATTR)
+    );
+    for (const link of rickrollLinks) {
       $.blockRick(link)
     }
   }
