@@ -3,7 +3,7 @@
 // @namespace   turkoid
 // @match       https://snahp.url/*
 // @grant       none
-// @version     2.3.0
+// @version     2.4
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -125,6 +125,11 @@
       do {
         if (decodedValue.length % 4 !== 0) {
           break
+        }
+        try {
+          decodedValue = atob(decodedValue)
+        } catch (error) {
+          console.error(`Failed to decode possible base64 string: [${decodedValue}]: ${error.message}\nContext: ${nodeValue}`)
         }
         decodedValue = atob(decodedValue)
         decodeCount++
