@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name        Snahp Helper
 // @namespace   turkoid
-// @match       https://snahp.url/*
-// @grant       none
-// @version     2.4
+// @match       *://*/*
+// @grant       GM_getValue
+// @version     2.5.0
 // @author      turkoid
 // @description Snahp, but gooder.
 // @updateURL   https://raw.githubusercontent.com/turkoid/userscripts/master/snahp/snahp-helper.meta.js
@@ -16,6 +16,17 @@
 (function () {
   'use strict'
 
+  const CONFIG = GM_getValue('config')
+  if (!CONFIG || !CONFIG.match) {
+    return
+  }
+  {
+    const MATCH_PATTERN = new RegExp(CONFIG['match'])
+    if (!MATCH_PATTERN.test(window.location.href)) {
+      return
+    }
+  }
+
   const $ = {
     dom: {},
     utils: {},
@@ -24,12 +35,6 @@
     fragments: {}
   }
 
-  const MEGA_DOMAIN = 'mega.nz'
-  const BROKEN_DOMAINS = {
-    'snahp.url': ['forum.snahp.it'],
-    'snahp.link.url': ['links.snahp.it'],
-    [MEGA_DOMAIN]: ['.nz']
-  }
   const SNAHP_ATTR = 'Snahpd'
   const SNAHP_CONTAINER = 'snahp-container'
   const SNAHP_BASE64_SECTION = 'snahp-base64'
@@ -130,8 +135,8 @@
           decodedValue = atob(decodedValue)
         } catch (error) {
           console.error(`Failed to decode possible base64 string: [${decodedValue}]: ${error.message}\nContext: ${nodeValue}`)
+          break
         }
-        decodedValue = atob(decodedValue)
         decodeCount++
         BASE64_CHARS.lastIndex = 0
         isDecoded = $.utils.isPatternFound(PARTIAL_URL, decodedValue) || $.utils.isPatternFound(MEGA_URL_FRAGMENT, decodedValue)
@@ -345,7 +350,7 @@
   $.fragments.createContainer = function (id, key) {
     let container
     if (id && key) {
-      container = $.dom.createLink(`https://${MEGA_DOMAIN}/${id.textContent}${key.textContent}`)
+      container = $.dom.createLink(`https://${CONFIG['mega_domain']}/${id.textContent}${key.textContent}`)
     } else {
       container = $.dom.createSpan(`${id?.textContent ?? '?'} + ${key?.textContent ?? '?'}`)
     }
@@ -440,7 +445,11 @@
     /**
      * update old domains to the new ones
      */
-    for (const [newDomain, oldDomains] of Object.entries(BROKEN_DOMAINS)) {
+    for (const [newDomainKey, oldDomains] of Object.entries(CONFIG['broken_domains'])) {
+      let newDomain = newDomainKey
+      if (newDomain.startsWith('$')) {
+        newDomain = CONFIG[newDomain.slice(1)]
+      }
       for (const oldDomain of oldDomains) {
         const matches = url.matchAll(URL)
         for (const match of matches) {
